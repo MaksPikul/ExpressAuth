@@ -59,6 +59,7 @@ app.use(session({
 }))
 
 //handles routes
+//THIS ROUTE TO THIS FOlder
 app.use("/auth", authRouter);
 
 

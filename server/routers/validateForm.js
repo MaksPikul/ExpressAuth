@@ -2,30 +2,32 @@
 //import { formSchema } from '../common';
 const yup = require("yup")
 
+const formSchema = yup.object().shape({
+    email: yup.string()
+      .required("Email required")
+      .min(6, "Email too short")
+      .max(27, "Email Too long"),
+      password: yup.string()
+      .required("Password required")
+      .min(6, "Password too short")
+      .max(27, "Password Too long"),
+  })
 
-const validateForm = (req ,res) => {
-    
-    const formSchema = yup.object().shape({
-        email: yup.string()
-          .required("Email required")
-          .min(6, "Email too short")
-          .max(27, "Email Too long"),
-          password: yup.string()
-          .required("Password required")
-          .min(6, "Password too short")
-          .max(27, "Password Too long"),
-      })
+
+const validateForm = (req ,res, next) => {
 
     const formData = req.body;
         formSchema.validate(formData)
-            .catch(err => {
-                res.status(422).send();
-                console.log("problem :3")
-                console.log(err.errors);    
+            .catch(() => {
+                res.status(422).send();   
             })
             .then(valid => {
                 if (valid) {
                     console.log("form valid");
+                    next()
+                }
+                else {
+                    res.status(422).send();   
                 }
             })
 }
