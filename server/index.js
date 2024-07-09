@@ -42,6 +42,7 @@ app.use(cors({
 app.use(express.json())
 
 //allows for cookies, saves user state, keeps people logged in
+/*
 app.use(session({
     secret: "dog",//process.env.COOKIE_SECRET,
     credentials: true,
@@ -55,8 +56,8 @@ app.use(session({
         expires:   1000 * 60 * 60 * 24 * 7,
         sameSite: "lax"//process.env.ENVIRONMENT === "production" ? "true" : "lax"
     }
-    
 }))
+*/
 
 //handles routes
 //THIS ROUTE TO THIS FOlder

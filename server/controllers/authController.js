@@ -1,13 +1,30 @@
 const pool = require("../db");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken")
+const { 
+    jwtSign, 
+    jwtVerify, 
+    getJwt } = require("./jwt/jwtAuth");
+require('dotenv').config();
 
 module.exports.getLogin = (req, res) => {
-    if (req.session.user && req.session.user.email){
-        res.json({loggedIn: true, email: req.session.user.email})
-    }
-    else{
+
+    const token = getJwt(req)
+
+    if (!token) {
         res.json({loggedIn: false});
+        return
     }
+
+    jwtVerify(token, process.env.JWT_SECRET)
+    .catch(err => {
+        console.log(err)
+        
+    })
+    .then(()=>{
+        res.json({ loggedIn: true, token});
+    })
+
 }
 
 module.exports.postLogin = async (req, res) => {
@@ -20,10 +37,21 @@ module.exports.postLogin = async (req, res) => {
         potentialLogin.rows[0].passhash);
 
         if (samePass) {
-            req.session.user = {
-            email: req.body.email,
-            id : potentialLogin.rows[0].id}
-            res.json({loggedIn: true, email: req.body.email})
+            
+            jwtSign({
+                email: req.body.email,
+                id: potentialLogin.rows[0].id,
+                userId: potentialLogin.rows[0].userId
+            },process.env.JWT_SECRET,
+            {expiresIn: "1min"},)
+            .catch(err => {
+                console.log(err)
+                res.json({loggedIn: false, status: "Something went wrong"})
+            })
+            .then(token =>{
+                res.json({loggedIn: true, token})
+            })
+
         }
         else {
             res.json({loggedIn : false, status:"Wrong username or passsword."})
@@ -46,11 +74,22 @@ module.exports.register = async (req, res) => {
         const newUserQuery = await pool.query(
             "INSERT INTO users(email, passhash) values ($1, $2) RETURNING id, email",
             [req.body.email, hashedPass]);
-        req.session.user = {
+
+        jwtSign({
             email: req.body.email,
-            id: newUserQuery.rows[0].id
-        }
-        res.json({loggedIn: true, email: req.body.email})
+            id: newUserQuery.rows[0].id,
+            userId: newUserQuery.rows[0].userId
+        },process.env.JWT_SECRET,
+        {expiresIn: "1min"},)
+        .catch(err => {
+            console.log(err)
+            res.json({loggedIn: false, status: "Something went wrong"})
+        })
+        .then(token =>{
+            res.json({loggedIn: true, token})
+        })
+
+        //res.json({loggedIn: true, email: req.body.email})
     }
     else{
         res.json({loggedIn:false, status: "Email already in use."})
