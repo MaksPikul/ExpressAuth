@@ -2,13 +2,13 @@ const  express = require("express")
 const router = express.Router()
 const validateForm = require("./validateForm")
 const {
-    handleLogin, 
+    getLogin, 
     postLogin, 
     register
 } = require('../controllers/authController')
 
 router.route("/login")
-    .get(handleLogin)
+    .get(getLogin)
     .post(validateForm, postLogin)
 
 router

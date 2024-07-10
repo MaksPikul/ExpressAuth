@@ -9,7 +9,13 @@ export const UserContext = ({children}) => {
 
     useEffect(() => {
         fetch("http://localhost:4000/auth/login",
-        {credentials: "include"})
+        {
+            credentials: "include",
+            headers: {
+                'Authorization': 'Bearer ',
+                'Content-Type': 'application/json'
+            }
+        })
         .catch(err => {
             setUser({loggedIn: false}) 
             return})

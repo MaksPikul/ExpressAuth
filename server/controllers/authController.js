@@ -8,9 +8,9 @@ const {
 require('dotenv').config();
 
 module.exports.getLogin = (req, res) => {
-
+    console.log("do u run 2", req.headers)
     const token = getJwt(req)
-
+    console.log(token)
     if (!token) {
         res.json({loggedIn: false});
         return
@@ -22,6 +22,7 @@ module.exports.getLogin = (req, res) => {
         
     })
     .then(()=>{
+        console.log("do u succ?")
         res.json({ loggedIn: true, token});
     })
 
@@ -32,7 +33,7 @@ module.exports.postLogin = async (req, res) => {
     const potentialLogin = await pool.query("SELECT id, email, passhash FROM users u WHERE u.email=$1", [req.body.email])
 
     if (potentialLogin.rowCount > 0){
-        const samePass = bcrypt.compare
+        const samePass = await bcrypt.compare
         (req.body.password, 
         potentialLogin.rows[0].passhash);
 
