@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { Form, useFormik } from "formik";
 import * as yup from "yup";
@@ -8,11 +8,13 @@ import {TextField, Button, Stack, FormControl, FormLabel, FormHelperText, Button
 import { useContext } from 'react';
 import { AccountContext } from './AccountContext.jsx';
 
-
-
 const Signup = () => {
   const navigate = useNavigate();
   const {setUser} = useContext(AccountContext)
+
+  const [awaitingVerification, setAwaitingVerification] = useState(false)
+
+  //add observer to observe if verified
   
       const validation = yup.object({
         email: yup.string()
@@ -30,7 +32,7 @@ const Signup = () => {
         validationSchema: validation,
     
         onSubmit: ((values, actions) => {
-          console.log("dogsssssss")
+        
           const vals = {...values};
           actions.resetForm();
           fetch("http://localhost:4000/auth/register",{
@@ -54,9 +56,11 @@ const Signup = () => {
             })
             .then(data => {
               if (!data){return;}
-              console.log("why not")
+              setAwaitingVerification(true)
               setUser({...data})
+              /*
               navigate("/home")
+              */
             })
       }),
     });
@@ -71,9 +75,15 @@ const Signup = () => {
           alignItems="center" // Center items vertically
           >
           */
+         <div>
+         {awaitingVerification? 
+          <div></div> 
+          // verification page
+          // which shows countdown to token expiration 
+          :
+          //register page
           <form onSubmit={formik.handleSubmit}>
             <Typography variant="h4">Register new Account</Typography>
-    
             
               <TextField
                 id="email"
@@ -85,8 +95,6 @@ const Signup = () => {
                 error={formik.touched.email && Boolean(formik.errors.email)}
                 helperText={formik.touched.email && formik.errors.email}
               />
-            
-    
             
               <TextField
                 id="password"
@@ -106,7 +114,9 @@ const Signup = () => {
               <Button onClick={()=> navigate("/")}>Back</Button>
             
       
-          </form>
+          </form> 
+         }
+         </div>
   )
 }
 

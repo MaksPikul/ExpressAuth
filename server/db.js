@@ -1,6 +1,6 @@
-const {Pool} = require("pg")
 require("dotenv").config();
 
+const {Pool} = require("pg")
 const pool = new Pool({
     database: process.env.DATABASE_NAME,
     host: process.env.DATABASE_HOST,
@@ -10,3 +10,12 @@ const pool = new Pool({
 });
 
 module.exports = pool;
+
+/*
+const postgres = require("postgres")
+
+const pool = postgres(process.env.SB_DATABASE_URL)
+
+module.exports = pool
+*/
+

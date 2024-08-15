@@ -4,7 +4,11 @@ const { createContext, useEffect, useState } = require("react");
 
 export const AccountContext = createContext();
 export const UserContext = ({children}) => {
-    const [user, setUser] = useState({loggedIn: null});
+    const [user, setUser] = useState({
+        loggedIn: null,
+        //redisKey: null,
+        //token: localStorage.getItem('token')
+    });
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -12,7 +16,7 @@ export const UserContext = ({children}) => {
         {
             credentials: "include",
             headers: {
-                'Authorization': 'Bearer ',
+                //'authorization': `Bearer ${user.token}`,  
                 'Content-Type': 'application/json'
             }
         })
@@ -31,7 +35,6 @@ export const UserContext = ({children}) => {
                 return
             }
             else{
-                console.log("getting nut")
                 setUser ({...data})
                 navigate("/home")
             }

@@ -3,13 +3,24 @@ const { Server } = require("socket.io")
 //created app which enables HTTP requests
 const app = express(); 
 const session = require("express-session")
+
+
+
+const redisStore = require('connect-redis').default;
 const server = require("http").createServer(app);
+//const getRedisClient = require("./redis")
 const Redis = require("ioredis")
-const redisStore = require("connect-redis").default;
+
+//const https = require('https')
+//const fs = require('fs');
 const helmet = require("helmet");
 const cors  = require("cors");
 const authRouter = require("./routers/authRouter")
 require("dotenv").config()
+
+const {googleOAuthHandler} = require("./controllers/OAuthController")
+
+
 
 const io = new Server(server, {
     cors: {
@@ -17,9 +28,10 @@ const io = new Server(server, {
         credentials: "true",
     }
 })
-const redisClient = new Redis();
 
+const redisClient = new Redis()//getRedisClient()
 
+//console.log(redisClient)
 
 //Created a server, this will allow for bi-directional communication
 //between server and client
@@ -42,32 +54,59 @@ app.use(cors({
 app.use(express.json())
 
 //allows for cookies, saves user state, keeps people logged in
-/*
+
 app.use(session({
-    secret: "dog",//process.env.COOKIE_SECRET,
+    secret: process.env.COOKIE_SECRET,
     credentials: true,
-    name: "sid",
-    //store: new redisStore({client: redisClient}),
+    store: new redisStore({client: redisClient}),
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true,
     cookie: {
-        secure: false,//process.env.ENVIRONMENT === "production" ? "true" : "auto",
+        secure: process.env.ENVIRONMENT === "production" ? "true" : "auto",
         httpOnly: true,
         expires:   1000 * 60 * 60 * 24 * 7,
         sameSite: "lax"//process.env.ENVIRONMENT === "production" ? "true" : "lax"
     }
 }))
-*/
+
 
 //handles routes
 //THIS ROUTE TO THIS FOlder
 app.use("/auth", authRouter);
 
+app.get("/api/sessions/oauth/google", googleOAuthHandler)
+
 
 //handles events when client connects (in login, file will ask to connect)
-io.on("connect", socket => {});
+io.on("connection", socket => {
+
+    socket.on('disconnect', () => {
+        console.log('Client disconnected');
+    });
+
+    const notify = () => {
+        socket.emit('redirect', {url} )
+    }
+});
+
+
+
 
 //listens for requests to connect to server
 server.listen(4000, ()=>{
     console.log("Server listening on port 4000");
+
+
 })
+
+/*
+const httpsOptions = {
+    key: fs.readFileSync('key.pem'),
+    cert: fs.readFileSync('cert.pem')
+  };
+
+
+https.createServer(httpsOptions, app).listen(8443, () => {
+    console.log(`HTTPS Server running on port ${PORT}`);
+  });
+*/
